@@ -1,0 +1,1715 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fit Progress</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}
+:root{--p:#6d28d9;--pd:#35115b;--o:#f97316;--bg:#fff8f0;--card:rgba(255,255,255,.92);--text:#251238;--muted:#75627f;--line:#ead7ff;--soft:#f3e9ff;--orange:#ffedd5;--green:#dcfce7;--blue:#dbeafe;--shadow:0 18px 44px rgba(88,28,135,.13)}
+body.dark{--bg:#170d24;--card:rgba(39,23,59,.95);--text:#fff7ed;--muted:#d9c5eb;--line:#573277;--soft:#321d49;--orange:#3a2416;--green:#163325;--blue:#16243b;--shadow:0 18px 44px rgba(0,0,0,.28)}
+body{margin:0;font-family:Arial,sans-serif;color:var(--text);background:radial-gradient(circle at 10% 5%,rgba(249,115,22,.18),transparent 27%),radial-gradient(circle at 90% 0,rgba(109,40,217,.18),transparent 25%),linear-gradient(180deg,var(--bg),#fff),var(--bg)}
+body.dark{background:radial-gradient(circle at 10% 5%,rgba(249,115,22,.18),transparent 27%),radial-gradient(circle at 90% 0,rgba(109,40,217,.18),transparent 25%),var(--bg)}
+header{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.8);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+body.dark header{background:rgba(23,13,36,.8)}
+.topbar{width:min(1180px,calc(100% - 28px));margin:auto;min-height:72px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{display:flex;align-items:center;gap:12px;font-weight:900;color:var(--p);white-space:nowrap}
+.logo{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;color:white;background:linear-gradient(135deg,var(--p),var(--o));box-shadow:var(--shadow)}
+nav{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+nav button{border:0;border-radius:999px;background:transparent;color:var(--muted);font-weight:800;padding:10px 12px;cursor:pointer}
+nav button.active{color:white;background:linear-gradient(135deg,var(--p),var(--o))}
+main{width:min(1180px,calc(100% - 28px));margin:24px auto 44px}
+.view{display:none}.view.active{display:block}
+section,.card{background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow)}
+section{padding:22px;margin-bottom:18px}
+h1,h2,h3,p{margin-top:0}
+h1{font-size:clamp(38px,7vw,78px);line-height:.95;margin-bottom:16px}
+h2{color:var(--pd);font-size:28px}body.dark h2{color:#ffc078}
+p{line-height:1.55;color:var(--muted)}
+input,select,textarea,button{font:inherit}
+input,select,textarea{width:100%;padding:12px;border:1px solid var(--line);border-radius:14px;background:white;color:#251238}
+body.dark input,body.dark select,body.dark textarea{background:#21112f;color:#fff7ed}
+textarea{min-height:86px;resize:vertical}
+.btn{border:0;border-radius:14px;padding:13px 16px;color:white;font-weight:900;cursor:pointer;background:linear-gradient(135deg,var(--p),var(--o));transition:.2s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 12px 24px rgba(249,115,22,.24)}
+.btn.soft{background:var(--soft);color:var(--pd)}body.dark .btn.soft{color:#fff7ed}
+.btn.danger{background:#fee2e2;color:#991b1b}
+.hero{min-height:calc(100vh - 120px);display:grid;grid-template-columns:1.05fr .95fr;gap:18px;align-items:stretch}
+.hero-main{padding:clamp(24px,5vw,48px);display:grid;align-content:center;color:white;overflow:hidden;position:relative;background:radial-gradient(circle at 85% 14%,rgba(255,255,255,.28),transparent 24%),linear-gradient(135deg,rgba(76,29,149,.96),rgba(249,115,22,.9))}
+.hero-main:after{content:"";position:absolute;right:-90px;bottom:-115px;width:330px;height:330px;border:30px solid rgba(255,255,255,.18);border-radius:50%}
+.hero-main>*{position:relative;z-index:1}.hero-main h1,.hero-main p{color:white}
+.hero-tags{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 18px}
+.hero-tag{padding:8px 10px;border-radius:999px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);font-weight:800}
+.hero-side{display:grid;gap:18px}
+.summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.stat{padding:18px;border-radius:18px;background:linear-gradient(135deg,var(--soft),var(--orange));border:1px solid var(--line)}
+.stat strong{display:block;font-size:34px;color:var(--p)}body.dark .stat strong{color:#ff9d42}
+.home-sportik{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;padding:18px;cursor:pointer;transition:.2s;background:linear-gradient(135deg,var(--blue),var(--orange))}
+.home-sportik:hover{transform:translateY(-2px)}
+.home-sportik-avatar{width:82px;height:82px;border-radius:26px;background:white;display:grid;place-items:center;font-size:46px;border:1px solid var(--line)}
+.actions,.toolbar,.record-actions,.chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.actions .btn,.record-actions button{flex:1;min-width:130px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.full{grid-column:1/-1}
+label{display:grid;gap:6px;color:var(--muted);font-weight:800;font-size:14px}
+.records,.playlist,.nutrition,.badges{display:grid;gap:10px}
+.record,.song,.food,.badge,.smart-box,.quote-box,.extra-box,.chart-box,.profile-card{padding:14px;border-radius:16px;background:linear-gradient(135deg,rgba(255,237,213,.72),rgba(241,232,255,.72));border:1px solid var(--line)}
+body.dark .record,body.dark .song,body.dark .food,body.dark .badge,body.dark .smart-box,body.dark .quote-box,body.dark .extra-box,body.dark .chart-box,body.dark .profile-card{background:rgba(44,26,67,.9)}
+.record{border-left:6px solid var(--o)}
+.chip{border:1px solid var(--line);border-radius:999px;background:white;color:var(--pd);padding:9px 12px;font-weight:800;cursor:pointer}
+body.dark .chip{background:#21112f;color:#fff7ed}
+.water-count,.bmi-count{font-size:54px;font-weight:900;color:var(--p);margin:8px 0}
+body.dark .water-count,body.dark .bmi-count{color:#ff9d42}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:12px}
+.day-name,.day{min-height:50px;display:grid;place-items:center;border-radius:14px;text-align:center;font-weight:900}
+.day-name{min-height:30px;color:var(--p);background:var(--soft)}
+.day{background:rgba(255,255,255,.72);border:1px solid var(--line)}
+body.dark .day{background:#21112f}
+.day.active{color:white;background:linear-gradient(135deg,var(--p),var(--o))}
+.day.today{outline:3px solid #fb923c}
+.progress-line{height:14px;background:var(--soft);border-radius:999px;overflow:hidden;margin-top:10px}
+.progress-fill{height:100%;width:0;background:linear-gradient(135deg,var(--p),var(--o));transition:.25s}
+.chart{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;align-items:end;height:190px}
+.bar-wrap{display:grid;gap:8px;align-items:end;height:100%;text-align:center;font-size:12px;color:var(--muted)}
+.bar{width:100%;min-height:8px;border-radius:12px 12px 4px 4px;background:linear-gradient(180deg,var(--o),var(--p))}
+.timer{text-align:center}
+.timer-display{margin:14px 0;font-size:clamp(48px,8vw,72px);font-weight:900;color:var(--p);font-variant-numeric:tabular-nums}
+body.dark .timer-display{color:#ff9d42}
+.cube-wrap{display:grid;justify-items:center;gap:16px;text-align:center;padding:20px}
+.cube-scene{width:150px;height:150px;margin:8px auto;perspective:700px}
+.cube{width:150px;height:150px;position:relative;transform-style:preserve-3d;transform:rotateX(-20deg) rotateY(30deg);transition:transform 900ms ease;cursor:pointer}
+.face{position:absolute;width:150px;height:150px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:5px;padding:8px;border-radius:16px;background:#2e1065;border:2px solid rgba(255,255,255,.7)}
+.face span{border-radius:8px}
+.front{transform:translateZ(75px)}.back{transform:rotateY(180deg) translateZ(75px)}.right{transform:rotateY(90deg) translateZ(75px)}.left{transform:rotateY(-90deg) translateZ(75px)}.top{transform:rotateX(90deg) translateZ(75px)}.bottom{transform:rotateX(-90deg) translateZ(75px)}
+.front span{background:#f97316}.back span{background:#7c3aed}.right span{background:#fb923c}.left span{background:#a855f7}.top span{background:#fff}.bottom span{background:#ffd166}
+.quote-box{display:none;max-width:680px;font-size:18px;font-weight:900;color:var(--pd)}
+body.dark .quote-box{color:#fff7ed}
+.quote-box.show{display:block;animation:appear .35s ease}
+.sportik-card{padding:0;overflow:hidden}
+.luna-head{display:flex;align-items:center;gap:12px;padding:16px;background:linear-gradient(135deg,var(--soft),var(--orange));border-bottom:1px solid var(--line)}
+.luna-avatar{width:76px;height:76px;border-radius:24px;background:white;border:1px solid var(--line);display:grid;place-items:center;font-size:42px}
+.luna-chat{height:430px;overflow:auto;padding:14px;display:grid;gap:10px;align-content:start}
+.luna-msg{max-width:88%;padding:11px 13px;border-radius:16px;line-height:1.4;white-space:pre-wrap}
+.luna-bot{justify-self:start;background:var(--soft);color:var(--text)}
+.luna-user{justify-self:end;background:linear-gradient(135deg,var(--p),var(--o));color:white}
+.luna-form{padding:14px;border-top:1px solid var(--line);display:grid;gap:10px}
+.sportik-avatar-big{font-size:76px;width:132px;height:132px;border-radius:34px;display:grid;place-items:center;background:linear-gradient(135deg,var(--soft),var(--orange));border:1px solid var(--line);box-shadow:var(--shadow);margin-bottom:14px}
+@keyframes appear{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+footer{text-align:center;color:var(--muted);padding:24px 0}
+@media(max-width:980px){.topbar{align-items:flex-start;flex-direction:column}nav{justify-content:flex-start}.hero,.grid{grid-template-columns:1fr}.hero{min-height:auto}.hero-main{min-height:440px}}
+@media(max-width:700px){main{width:min(100% - 18px,1180px);margin-top:14px}.topbar{width:min(100% - 18px,1180px)}section{padding:16px;border-radius:18px}.form-grid,.summary-grid{grid-template-columns:1fr}nav{width:100%;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px}nav button{white-space:nowrap}.actions .btn,.record-actions button{min-width:100%;flex:1}.home-sportik{grid-template-columns:1fr;text-align:center}.home-sportik-avatar{margin:auto}.calendar{gap:5px}.day,.day-name{min-height:42px;font-size:13px}.luna-chat{height:360px}.sportik-avatar-big{margin:auto auto 14px}}
+.hero-main{
+  background-size:160% 160%;
+  animation:heroGlow 9s ease-in-out infinite;
+}
+
+@keyframes heroGlow{
+  0%,100%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+}
+
+.card,section,.record,.food,.badge,.smart-box,.profile-card,.song{
+  transition:transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+}
+
+.card:hover,
+.record:hover,
+.food:hover,
+.badge:hover,
+.smart-box:hover,
+.profile-card:hover,
+.song:hover{
+  transform:translateY(-3px);
+  box-shadow:0 22px 52px rgba(88,28,135,.18);
+  border-color:rgba(249,115,22,.45);
+}
+
+nav button:hover{
+  background:var(--soft);
+  color:var(--pd);
+}
+
+.logo,.sportik-avatar-big,.home-sportik-avatar,.luna-avatar{
+  animation:softFloat 3.8s ease-in-out infinite;
+}
+
+@keyframes softFloat{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-6px)}
+}
+
+.hero-tag{
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);
+}
+
+.badges-wide{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+
+.badge{
+  position:relative;
+  overflow:hidden;
+}
+
+.badge:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(120deg,transparent,rgba(255,255,255,.32),transparent);
+  transform:translateX(-120%);
+  transition:transform .6s ease;
+}
+
+.badge:hover:before{
+  transform:translateX(120%);
+}
+
+@media(max-width:700px){
+  .badges-wide{
+    grid-template-columns:1fr;
+  }
+}
+body:before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:-1;
+  background:
+    linear-gradient(rgba(109,40,217,.055) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(109,40,217,.055) 1px,transparent 1px);
+  background-size:42px 42px;
+  mask-image:linear-gradient(to bottom,black,transparent 80%);
+}
+
+section,.card{
+  backdrop-filter:blur(18px);
+}
+
+.btn{
+  position:relative;
+  overflow:hidden;
+}
+
+.btn:before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:-120%;
+  width:80%;
+  height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);
+  transform:skewX(-18deg);
+}
+
+.btn:hover:before{
+  animation:shine .75s ease;
+}
+
+@keyframes shine{
+  to{left:140%}
+}
+
+.sportik-card{
+  border:1px solid rgba(249,115,22,.35);
+  box-shadow:0 24px 70px rgba(109,40,217,.18);
+}
+
+.luna-head{
+  position:relative;
+  overflow:hidden;
+}
+
+.luna-head:after{
+  content:"";
+  position:absolute;
+  inset:auto -20% -45% auto;
+  width:180px;
+  height:180px;
+  border-radius:50%;
+  background:rgba(255,255,255,.28);
+}
+
+.luna-msg{
+  animation:messagePop .25s ease;
+}
+
+@keyframes messagePop{
+  from{opacity:0;transform:translateY(6px) scale(.98)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+
+.badge h3{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.badge h3:first-letter{
+  color:var(--o);
+}
+
+.stat{
+  position:relative;
+  overflow:hidden;
+}
+
+.stat:after{
+  content:"";
+  position:absolute;
+  right:-30px;
+  bottom:-30px;
+  width:90px;
+  height:90px;
+  border-radius:50%;
+  background:rgba(255,255,255,.34);
+}
+
+.record{
+  background:
+    linear-gradient(135deg,rgba(255,237,213,.82),rgba(241,232,255,.82)),
+    linear-gradient(90deg,var(--o),var(--p));
+}
+
+.timer-display{
+  text-shadow:0 10px 30px rgba(109,40,217,.18);
+}
+
+.chip:hover{
+  transform:translateY(-2px);
+  border-color:rgba(249,115,22,.65);
+  box-shadow:0 10px 24px rgba(109,40,217,.12);
+}
+
+.chip{
+  transition:.2s;
+}
+body{
+  background:
+    radial-gradient(circle at 12% 8%,rgba(255,157,66,.25),transparent 26%),
+    radial-gradient(circle at 88% 10%,rgba(124,58,237,.25),transparent 24%),
+    radial-gradient(circle at 50% 92%,rgba(14,165,233,.13),transparent 28%),
+    linear-gradient(135deg,#fff8f0,#f6edff 45%,#fff3e7);
+  background-attachment:fixed;
+}
+
+body.dark{
+  background:
+    radial-gradient(circle at 12% 8%,rgba(255,157,66,.18),transparent 26%),
+    radial-gradient(circle at 88% 10%,rgba(168,85,247,.22),transparent 24%),
+    radial-gradient(circle at 50% 92%,rgba(14,165,233,.12),transparent 28%),
+    linear-gradient(135deg,#170d24,#241237 45%,#15091f);
+}
+
+body:before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-2;
+  pointer-events:none;
+  background:
+    linear-gradient(rgba(109,40,217,.055) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(109,40,217,.055) 1px,transparent 1px);
+  background-size:44px 44px;
+  mask-image:linear-gradient(to bottom,black,transparent 78%);
+}
+
+body:after{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 20% 30%,rgba(255,255,255,.35),transparent 12%),
+    radial-gradient(circle at 78% 28%,rgba(255,255,255,.24),transparent 10%),
+    radial-gradient(circle at 58% 74%,rgba(255,255,255,.22),transparent 11%);
+  filter:blur(18px);
+  opacity:.7;
+}
+
+section,.card{
+  backdrop-filter:blur(18px);
+  border:1px solid rgba(255,255,255,.55);
+}
+
+body.dark section,
+body.dark .card{
+  border-color:rgba(255,255,255,.12);
+}
+
+.hero-main{
+  background:
+    radial-gradient(circle at 82% 18%,rgba(255,255,255,.32),transparent 24%),
+    radial-gradient(circle at 18% 88%,rgba(255,255,255,.18),transparent 26%),
+    linear-gradient(135deg,#4c1d95,#7c3aed 42%,#f97316);
+  background-size:160% 160%;
+  animation:heroPulse 8s ease-in-out infinite;
+}
+
+@keyframes heroPulse{
+  0%,100%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+}
+
+.hero-main h1{
+  text-shadow:0 14px 32px rgba(0,0,0,.22);
+}
+
+.hero-tag{
+  background:rgba(255,255,255,.2);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.18),0 8px 18px rgba(0,0,0,.08);
+}
+
+.logo,
+.home-sportik-avatar,
+.sportik-avatar-big,
+.luna-avatar{
+  animation:floaty 3.6s ease-in-out infinite;
+}
+
+@keyframes floaty{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-7px)}
+}
+
+.btn{
+  position:relative;
+  overflow:hidden;
+  box-shadow:0 12px 24px rgba(109,40,217,.16);
+}
+
+.btn:before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:-120%;
+  width:70%;
+  height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.42),transparent);
+  transform:skewX(-18deg);
+}
+
+.btn:hover:before{
+  animation:buttonShine .75s ease;
+}
+
+@keyframes buttonShine{
+  to{left:140%}
+}
+
+section,
+.card,
+.record,
+.food,
+.badge,
+.smart-box,
+.profile-card,
+.song{
+  transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease;
+}
+
+.card:hover,
+.record:hover,
+.food:hover,
+.badge:hover,
+.smart-box:hover,
+.profile-card:hover,
+.song:hover{
+  transform:translateY(-4px);
+  box-shadow:0 24px 60px rgba(88,28,135,.2);
+  border-color:rgba(249,115,22,.5);
+}
+
+.stat{
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 88% 20%,rgba(255,255,255,.5),transparent 24%),
+    linear-gradient(135deg,var(--soft),var(--orange));
+}
+
+.stat:after{
+  content:"";
+  position:absolute;
+  right:-34px;
+  bottom:-34px;
+  width:96px;
+  height:96px;
+  border-radius:50%;
+  background:rgba(255,255,255,.36);
+}
+
+.stat strong{
+  position:relative;
+  z-index:1;
+}
+
+.home-sportik{
+  border:1px solid rgba(249,115,22,.35);
+  background:
+    radial-gradient(circle at 88% 22%,rgba(255,255,255,.6),transparent 26%),
+    linear-gradient(135deg,#dbeafe,#ffedd5 55%,#f3e9ff);
+}
+
+.sportik-card{
+  border:1px solid rgba(249,115,22,.42);
+  box-shadow:0 28px 76px rgba(109,40,217,.2);
+}
+
+.luna-head{
+  position:relative;
+  overflow:hidden;
+}
+
+.luna-head:after{
+  content:"";
+  position:absolute;
+  right:-50px;
+  bottom:-70px;
+  width:190px;
+  height:190px;
+  border-radius:50%;
+  background:rgba(255,255,255,.3);
+}
+
+.luna-msg{
+  animation:messagePop .24s ease;
+}
+
+@keyframes messagePop{
+  from{opacity:0;transform:translateY(6px) scale(.98)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+
+.luna-bot{
+  box-shadow:0 8px 18px rgba(109,40,217,.08);
+}
+
+.luna-user{
+  box-shadow:0 8px 18px rgba(249,115,22,.16);
+}
+
+.badges-wide{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+
+.badge{
+  position:relative;
+  overflow:hidden;
+}
+
+.badge:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(120deg,transparent,rgba(255,255,255,.34),transparent);
+  transform:translateX(-120%);
+  transition:transform .65s ease;
+}
+
+.badge:hover:before{
+  transform:translateX(120%);
+}
+
+.chip{
+  transition:.2s;
+  box-shadow:0 8px 18px rgba(109,40,217,.08);
+}
+
+.chip:hover{
+  transform:translateY(-2px);
+  border-color:rgba(249,115,22,.65);
+  box-shadow:0 12px 26px rgba(109,40,217,.14);
+}
+
+.timer-display{
+  text-shadow:0 12px 30px rgba(109,40,217,.2);
+}
+
+.record{
+  background:
+    linear-gradient(135deg,rgba(255,237,213,.84),rgba(241,232,255,.84)),
+    linear-gradient(90deg,var(--o),var(--p));
+}
+
+.day.active{
+  box-shadow:0 10px 24px rgba(109,40,217,.18);
+}
+
+@media(max-width:700px){
+  .badges-wide{
+    grid-template-columns:1fr;
+  }
+
+  body:before{
+    background-size:32px 32px;
+  }
+}
+
+
+</style>
+</head>
+
+<body>
+<!-- МОДАЛЬНЕ ВІКНО РЕЄСТРАЦІЇ -->
+<div id="authModal" style="display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 3000; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 30px; padding: 30px; max-width: 420px; width: 90%; text-align: center;">
+        <h2 style="color: #2D1B4E; margin-bottom: 10px;">👋 Вітаю в Fit Progress!</h2>
+        <p style="color: #7B6B8E; margin-bottom: 20px;">Створи свій профіль, щоб зберігати прогрес</p>
+        
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <button id="tabLogin" onclick="switchAuthTab('login')" style="flex: 1; padding: 10px; border: none; border-radius: 15px; background: #FF8C42; color: white; font-weight: bold; cursor: pointer;">Вхід</button>
+            <button id="tabRegister" onclick="switchAuthTab('register')" style="flex: 1; padding: 10px; border: none; border-radius: 15px; background: #F0E6FF; color: #2D1B4E; font-weight: bold; cursor: pointer;">Реєстрація</button>
+        </div>
+        
+        <!-- Форма реєстрації -->
+        <div id="registerForm">
+            <input type="text" id="regName" placeholder="Твоє ім'я" style="width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #E8D5FF; border-radius: 15px; font-size: 16px;">
+            <input type="email" id="regEmail" placeholder="Email" style="width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #E8D5FF; border-radius: 15px; font-size: 16px;">
+            <input type="password" id="regPassword" placeholder="Пароль (мін. 6 символів)" style="width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #E8D5FF; border-radius: 15px; font-size: 16px;">
+            <button onclick="registerUser()" style="width: 100%; padding: 14px; background: #FF8C42; color: white; border: none; border-radius: 20px; font-weight: bold; font-size: 16px; cursor: pointer;">Зареєструватися 🚀</button>
+            <p id="registerMsg" style="color: #E8827A; margin-top: 10px; font-size: 14px;"></p>
+        </div>
+        
+        <!-- Форма входу -->
+        <div id="loginForm" style="display: none;">
+            <input type="email" id="loginEmail" placeholder="Email" style="width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #E8D5FF; border-radius: 15px; font-size: 16px;">
+            <input type="password" id="loginPassword" placeholder="Пароль" style="width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #E8D5FF; border-radius: 15px; font-size: 16px;">
+            <button onclick="loginUser()" style="width: 100%; padding: 14px; background: #FF8C42; color: white; border: none; border-radius: 20px; font-weight: bold; font-size: 16px; cursor: pointer;">Увійти 🔑</button>
+            <p id="loginMsg" style="color: #E8827A; margin-top: 10px; font-size: 14px;"></p>
+        </div>
+    </div>
+</div>
+
+<!-- ПАНЕЛЬ КОРИСТУВАЧА (зверху) -->
+<div id="userBar" style="display: none; background: linear-gradient(135deg, #6d28d9, #f97316); color: white; padding: 8px 20px; text-align: center; font-weight: bold; position: relative; z-index: 100;">
+    👤 <span id="userNameDisplay"></span> 
+    <button onclick="logoutUser()" style="margin-left: 15px; background: rgba(255,255,255,0.2); color: white; border: none; padding: 5px 15px; border-radius: 15px; cursor: pointer;">Вийти</button>
+</div>
+<header>
+<div class="topbar">
+<div class="brand"><div class="logo">FP</div><div>Fit Progress</div></div>
+<nav>
+<button class="active" onclick="showView('home',this)">Головна</button>
+<button onclick="showView('profile',this)">Профіль</button>
+<button onclick="showView('training',this)">Тренування</button>
+<button onclick="showView('progress',this)">Прогрес</button>
+<button onclick="showView('health',this)">Здоров'я</button>
+<button onclick="showView('tools',this)">Інструменти</button>
+<button onclick="showView('sportik',this)">Розумний Спортік</button>
+</nav>
+</div>
+</header>
+
+<main>
+<div class="view active" id="home">
+<section class="hero">
+<div class="hero-main card">
+<h1 id="homeTitle">Мій спортивний кабінет</h1>
+<p id="homeSubtitle">Fit Progress допомагає записувати тренування, бачити прогрес, аналізувати активність і отримувати поради під різні види спорту.</p>
+<div class="hero-tags">
+<span class="hero-tag">тренування</span>
+<span class="hero-tag">харчування</span>
+<span class="hero-tag">вода</span>
+<span class="hero-tag">прогрес</span>
+</div>
+<div class="actions">
+<button class="btn" onclick="openTrainingForm()">Додати тренування</button>
+<button class="btn soft" onclick="showViewById('profile')">Заповнити профіль</button>
+<button class="btn soft" onclick="showViewById('tools')">Почати таймер</button>
+<button class="btn soft" onclick="showSportik()">Запитати Луну</button>
+</div>
+</div>
+
+<div class="hero-side">
+<div class="summary-grid">
+<div class="stat"><strong id="trainingCount">0</strong>тренувань</div>
+<div class="stat"><strong id="minuteCount">0</strong>хвилин</div>
+<div class="stat"><strong id="priceCount">0</strong>грн</div>
+<div class="stat"><strong id="achievementCount">0</strong>досягнень</div>
+</div>
+
+<div class="card home-sportik" onclick="showSportik()">
+<div class="home-sportik-avatar" id="homeLunaAvatar">🦋</div>
+<div>
+<h2 style="margin-bottom:6px">Розумний Спортік</h2>
+<p style="margin:0">Натисни на Луну, щоб отримати план, пораду про їжу, воду, відпочинок або мотивацію.</p>
+</div>
+</div>
+
+<div class="card cube-wrap">
+<h2>Кубик натхнення</h2>
+<div class="cube-scene"><div class="cube" id="quoteCube" onclick="spinQuoteCube()">
+<div class="face front"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+<div class="face back"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+<div class="face right"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+<div class="face left"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+<div class="face top"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+<div class="face bottom"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+</div></div>
+<button class="btn" onclick="spinQuoteCube()">Покрутити</button>
+<div class="quote-box" id="quoteBox"></div>
+</div>
+</div>
+</section>
+
+<section class="grid">
+<div><h2>Челендж дня</h2><div class="smart-box" id="challengeBox"></div></div>
+<div><h2>Розумна порада</h2><div class="smart-box" id="smartAdvice"></div></div>
+</section>
+<section><h2>Рівень користувача</h2><div class="smart-box" id="levelBox"></div></section>
+</div>
+
+<div class="view" id="profile">
+<section class="grid">
+<div>
+<h2>Профіль користувача</h2>
+<p>Це локальна база даних: інформація зберігається у браузері через localStorage.</p>
+<div class="form-grid">
+<label>Ім'я <input id="profileName"></label>
+<label>Прізвище <input id="profileSurname"></label>
+<label>Вік <input id="profileAge" type="number" min="1"></label>
+<label>Вага, кг <input id="profileWeight" type="number" min="1" step="0.1"></label>
+<label>Зріст, см <input id="profileHeight" type="number" min="1" step="0.1"></label>
+<label>Ціль
+<select id="profileGoal">
+<option>Здоров'я</option><option>Схуднення</option><option>Сила</option><option>Витривалість</option><option>Гнучкість</option>
+</select>
+</label>
+<label class="full">Рівень активності
+<select id="profileActivity">
+<option>Початковий</option><option>Середній</option><option>Активний</option><option>Спортивний</option>
+</select>
+</label>
+<button class="btn full" onclick="saveProfile()">Зберегти профіль</button>
+</div>
+</div>
+<div>
+<h2>Картка профілю</h2>
+<div class="profile-card" id="profileCard"></div>
+<h2 style="margin-top:18px">ІМТ</h2>
+<div class="profile-card"><div class="bmi-count" id="bmiValue">—</div><p id="bmiText">Заповни вагу і зріст, щоб сайт розрахував ІМТ.</p></div>
+</div>
+</section>
+</div>
+
+<div class="view" id="training">
+<section id="formSection">
+<h2 id="formTitle">Додати тренування</h2>
+<div class="form-grid">
+<label>Дата <input type="date" id="dateInput"></label>
+<label>Тип тренування <select id="typeInput" onchange="renderExtraFields()"></select></label>
+<label>Тривалість, хвилини <input type="number" id="minutesInput" min="1" placeholder="45"></label>
+<label>Ціна тренування, грн <input type="number" id="priceInput" min="0" placeholder="300"></label>
+<label>Складність <select id="difficultyInput"><option>Легке</option><option>Середнє</option><option>Важке</option></select></label>
+<label>Настрій <select id="moodInput"><option>Супер</option><option>Добре</option><option>Було важко</option><option>Потрібен відпочинок</option></select></label>
+<div class="full extra-box" id="extraFields"></div>
+<label class="full">Нотатка <textarea id="noteInput" placeholder="Що вдалося? Що треба повторити?"></textarea></label>
+<button class="btn full" onclick="saveTrainingFromForm()" id="saveButton">Зберегти тренування</button>
+<button class="btn soft full" onclick="cancelEdit()" id="cancelButton" style="display:none">Скасувати редагування</button>
+</div>
+</section>
+<section>
+<div class="toolbar">
+<label>Фільтр <select id="filterType" onchange="renderRecords()"><option value="all">Усі тренування</option></select></label>
+<button class="btn soft" onclick="exportReport()">Експорт звіту</button>
+</div>
+<div class="records" id="records"></div>
+</section>
+</div>
+
+<div class="view" id="progress">
+<section class="grid">
+<div>
+<h2>Мета на тиждень</h2>
+<div class="form-grid">
+<label>Тренувань на тиждень <input type="number" id="weeklyGoalInput" min="1" value="3" onchange="saveWeeklyGoal()"></label>
+<div><p id="weeklyGoalText"></p><div class="progress-line"><div class="progress-fill" id="weeklyProgressFill"></div></div></div>
+</div>
+</div>
+<div><h2>Графік за 7 днів</h2><div class="chart-box"><div class="chart" id="progressChart"></div></div></div>
+</section>
+<section>
+<h2>Календар</h2>
+<div class="actions">
+<button class="btn soft" onclick="previousMonth()">← Минулий</button>
+<button class="btn soft" onclick="goToCurrentMonth()">Поточний</button>
+<button class="btn soft" onclick="nextMonth()">Наступний →</button>
+</div>
+<p id="monthTitle"></p>
+<div class="calendar" id="calendar"></div>
+</section>
+
+<section>
+<h2>Досягнення</h2>
+<div class="badges badges-wide" id="badges"></div>
+</section>
+
+</div>
+
+<div class="view" id="health">
+<section class="grid">
+<div>
+<h2>Раціон харчування</h2>
+<label>Моя ціль
+<select id="nutritionGoal" onchange="renderNutrition();lunaBot(foodAdvice())">
+<option value="energy">Більше енергії</option>
+<option value="strength">Сила і м'язи</option>
+<option value="weight">Легке схуднення</option>
+<option value="recovery">Відновлення</option>
+</select>
+</label>
+<div class="nutrition" id="nutritionBox"></div>
+</div>
+<div>
+<h2>Трекер води</h2>
+<div class="food">
+<label>Дата <input type="date" id="waterDateInput" onchange="renderWater()"></label>
+<div class="water-count" id="waterCount">0</div>
+<p>склянок води за день</p>
+<div class="actions"><button class="btn soft" onclick="changeWater(-1)">−</button><button class="btn" onclick="changeWater(1)">+ Склянка</button></div>
+</div>
+</div>
+</section>
+
+<section>
+<h2>Щоденник харчування</h2>
+<p>Обери прийом їжі, натисни на приклад або запиши свій варіант.</p>
+<div class="form-grid">
+<label>Дата <input type="date" id="mealDateInput"></label>
+<label>Прийом їжі
+<select id="mealTypeInput" onchange="renderMealExamples()">
+<option>Сніданок</option><option>Обід</option><option>Вечеря</option><option>Перекус</option>
+</select>
+</label>
+<div class="full"><h3>Приклади</h3><div class="chips" id="mealExamples"></div></div>
+<label class="full">Що ти їла?<textarea id="mealTextInput" placeholder="Наприклад: вівсянка з бананом, чай, йогурт..."></textarea></label>
+<button class="btn full" onclick="addMeal()">Зберегти запис харчування</button>
+</div>
+<div class="nutrition" id="mealList" style="margin-top:14px"></div>
+</section>
+<section><h2>Поради для здоров'я</h2><div class="nutrition" id="healthTips"></div></section>
+</div>
+
+<div class="view" id="tools">
+<section class="grid">
+<div class="timer">
+<h2>Таймер вправ</h2>
+<p>Коли таймер завершиться, пролунає гучний сигнал на 5 секунд.</p>
+<div class="form-grid">
+<label>Хвилини <input type="number" id="timerMinutesInput" min="0" value="1"></label>
+<label>Секунди <input type="number" id="timerSecondsInput" min="0" max="59" value="0"></label>
+</div>
+<div class="timer-display" id="timerDisplay">01:00</div>
+<div class="actions">
+<button class="btn" onclick="startTimer()">Старт</button>
+<button class="btn soft" onclick="pauseTimer()">Пауза</button>
+<button class="btn soft" onclick="resetTimer()">Скинути</button>
+</div>
+</div>
+<div>
+<h2>Налаштування</h2>
+<div class="actions">
+<button class="btn soft" onclick="toggleTheme()">Світла / темна тема</button>
+<button class="btn soft" onclick="exportReport()">Експорт звіту</button>
+<button class="btn danger" onclick="clearAll()">Очистити всі дані</button>
+</div>
+<h2 style="margin-top:22px">Музика</h2>
+<div class="playlist" id="playlist"></div>
+</div>
+</section>
+</div>
+
+<div class="view" id="sportik">
+<section class="grid">
+<div>
+<div class="sportik-avatar-big" id="sportikBigAvatar">🦋</div>
+<h2>Розумний Спортік</h2>
+<p>Луна — твій розумний спортивний помічник.</p>
+
+<div class="form-grid">
+<label>Образ Луни
+<select id="lunaType" onchange="updateLunaAvatar()">
+<option value="butterfly">Метелик</option>
+<option value="cat">Кішечка</option>
+<option value="fairy">Фея</option>
+</select>
+</label>
+
+<label>Настрій Луни
+<select id="lunaMood" onchange="updateLunaAvatar();lunaBot(lunaMoodPhrase())">
+<option value="happy">Радісна</option>
+<option value="focus">Зосереджена</option>
+<option value="soft">Ніжна</option>
+<option value="magic">Магічна</option>
+</select>
+</label>
+</div>
+
+<div class="smart-box" style="margin-top:14px">
+<h3>Що вміє Луна</h3>
+<p>План тренування, аналіз прогресу, поради для раціону, підтримка після важкого дня, підказки для трюків і нагадування про відпочинок.</p>
+</div>
+
+<div class="smart-box" style="margin-top:14px" id="sportikSummary"></div>
+</div>
+
+<div>
+<div class="card sportik-card">
+<div class="luna-head">
+<div class="luna-avatar" id="lunaAvatar">🦋</div>
+<div>
+<h3 style="margin:0">Луна</h3>
+<p style="margin:2px 0 0"> Помічниця “Розумний Спортік”</p>
+</div>
+</div>
+
+<div class="luna-chat" id="lunaChat"></div>
+
+<div class="luna-form">
+<div class="chips">
+<button class="chip" onclick="quickLuna('аналіз')">Аналіз</button>
+<button class="chip" onclick="quickLuna('план')">План</button>
+<button class="chip" onclick="quickLuna('їжа')">Їжа</button>
+<button class="chip" onclick="quickLuna('сила')">Сила</button>
+<button class="chip" onclick="quickLuna('мотивація')">Мотивація</button>
+<button class="chip" onclick="quickLuna('трюк')">Трюк</button>
+<button class="chip" onclick="quickLuna('вода')">Вода</button>
+<button class="chip" onclick="quickLuna('відпочинок')">Відпочинок</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+
+<footer>Шкільний проєкт “Fit Progress” </footer>
+</div>
+</main>
+
+<script>
+// ========== SUPABASE INIT ==========
+const SUPABASE_URL = "https://etepmmmmnbukwtxhkplqg.supabase.co";
+const SUPABASE_KEY = "sb_publishable_4w_V4tqoQqeLYYWyEqmxVg_gEWROqiL"; 
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentUser = null;
+
+async function checkSession() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+        currentUser = session.user;
+        showMainApp();
+    } else {
+        document.getElementById("authModal").style.display = "flex";
+        document.getElementById("mainApp").style.display = "none";
+    }
+}
+
+async function showMainApp() {
+    document.getElementById("authModal").style.display = "none";
+    document.getElementById("mainApp").style.display = "block";
+    document.getElementById("userBar").style.display = "block";
+    
+    const { data: profile } = await supabase.from("profiles").select("*").eq("id", currentUser.id).single();
+    
+    if (profile) {
+        document.getElementById("userNameDisplay").textContent = profile.name || currentUser.email;
+        localStorage.setItem("fitProfile", JSON.stringify({
+            name: profile.name, 
+            surname: profile.surname || "", 
+            age: profile.age || "",
+            weight: profile.weight || "", 
+            height: profile.height || "",
+            goal: profile.goal || "Здоров'я", 
+            activity: profile.activity || "Початковий"
+        }));
+        loadProfile();
+        render();
+    } else {
+        document.getElementById("userNameDisplay").textContent = currentUser.email;
+    }
+}
+
+async function registerUser() {
+    const name = document.getElementById("regName").value.trim();
+    const email = document.getElementById("regEmail").value.trim();
+    const password = document.getElementById("regPassword").value;
+    const msg = document.getElementById("registerMsg");
+    
+    if (!name || !email || !password) { msg.textContent = "Заповни всі поля!"; return; }
+    if (password.length < 6) { msg.textContent = "Пароль має бути мінімум 6 символів"; return; }
+    
+    msg.textContent = "Реєструю...";
+    const { data, error } = await supabaseClient.auth.signUp({ email, password });
+    
+    if (error) { msg.textContent = "Помилка: " + error.message; return; }
+    
+    if (data.user) {
+        await supabaseClient.from("profiles").insert({ id: data.user.id, name: name });
+        msg.textContent = "✅ Успіх! Тепер увійди.";
+        switchAuthTab("login");
+        document.getElementById("loginEmail").value = email;
+    }
+}
+
+async function loginUser() {
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
+    const msg = document.getElementById("loginMsg");
+    
+    if (!email || !password) { msg.textContent = "Заповни всі поля!"; return; }
+    
+    msg.textContent = "Входжу...";
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    
+    if (error) { msg.textContent = "Помилка: " + error.message; return; }
+    
+    currentUser = data.user;
+    msg.textContent = "";
+    showMainApp();
+}
+
+async function logoutUser() {
+    await supabaseClient.auth.signOut();
+    currentUser = null;
+    document.getElementById("authModal").style.display = "flex";
+    document.getElementById("userBar").style.display = "none";
+    document.getElementById("mainApp").style.display = "none";
+}
+
+function switchAuthTab(tab) {
+    if (tab === "login") {
+        document.getElementById("tabLogin").style.background = "#FF8C42";
+        document.getElementById("tabLogin").style.color = "white";
+        document.getElementById("tabRegister").style.background = "#F0E6FF";
+        document.getElementById("tabRegister").style.color = "#2D1B4E";
+        document.getElementById("loginForm").style.display = "block";
+        document.getElementById("registerForm").style.display = "none";
+    } else {
+        document.getElementById("tabRegister").style.background = "#FF8C42";
+        document.getElementById("tabRegister").style.color = "white";
+        document.getElementById("tabLogin").style.background = "#F0E6FF";
+        document.getElementById("tabLogin").style.color = "#2D1B4E";
+        document.getElementById("registerForm").style.display = "block";
+        document.getElementById("loginForm").style.display = "none";
+    }
+}
+
+checkSession();
+// ========== КІНЕЦЬ SUPABASE ==========
+`
+const types=["Розтяжка","Силове тренування","Кардіо","Танці","Йога","Пілатес","Гімнастика","Повітряна гімнастика","Біг","Ходьба","Велотренування","Плавання","Фітнес","HIIT","Бокс","Єдиноборства","Волейбол","Футбол","Баскетбол","Теніс","Лижі","Ковзани","Відновлення","Інше"];
+const mealIdeas={Сніданок:["Вівсянка з бананом","Яйця з тостом","Йогурт з фруктами","Сирники","Гречка з яйцем"],Обід:["Курка з гречкою","Суп і салат","Рис з овочами","Паста з куркою","Картопля з рибою"],Вечеря:["Риба з овочами","Омлет із салатом","Курка з овочами","Салат з білком","Тушковані овочі"],Перекус:["Банан","Горіхи","Йогурт","Яблуко","Сир або протеїновий батончик"]};
+const challenges=["Випити 6 склянок води","Зробити 10 хвилин розтяжки","Додати одне тренування","Записати всі прийоми їжі","Пройти або пробігти 2 км","Зробити легке відновлення","Покрутити кубик натхнення"];
+const songs=[
+{name:"Warm-up Flow",desc:"музика для розминки",url:"https://www.youtube.com/results?search_query=warm+up+workout+music"},
+{name:"Stretch Focus",desc:"музика для розтяжки",url:"https://www.youtube.com/results?search_query=stretching+relaxing+music"},
+{name:"Power Mode",desc:"енергійний режим",url:"https://www.youtube.com/results?search_query=power+workout+music"},
+{name:"Cool Down",desc:"спокійне завершення",url:"https://www.youtube.com/results?search_query=cool+down+workout+music"}
+];
+const quotes=["Маленький прогрес щодня створює великий результат.","Тренування починається не з сили, а з рішення.","Твоя дисципліна сьогодні — це твоя впевненість завтра.","Не потрібно бути ідеальною, потрібно продовжувати.","Кожне тренування — це інвестиція в себе.","Сильне тіло починається з маленької звички.","Сьогоднішній крок уже наближає тебе до мети.","Результат любить регулярність."];
+
+let trainings=JSON.parse(localStorage.getItem("fitTrainings"))||[];
+let meals=JSON.parse(localStorage.getItem("fitMeals"))||[];
+let waterLog=JSON.parse(localStorage.getItem("fitWater"))||{};
+let profile=JSON.parse(localStorage.getItem("fitProfile"))||{};
+let challengeLog=JSON.parse(localStorage.getItem("fitChallenges"))||{};
+let lunaHistory=JSON.parse(localStorage.getItem("fitLunaChat"))||[];
+let timerSeconds=60,startTimerSeconds=60,timerInterval=null,timerStarted=false,selectedSong=Number(localStorage.getItem("selectedSong"))||0,calendarDate=new Date(),editingId=null,cubeTurns=0;
+
+types.forEach(t=>{typeInput.add(new Option(t,t));filterType.add(new Option(t,t))});
+dateInput.valueAsDate=new Date();
+mealDateInput.valueAsDate=new Date();
+waterDateInput.valueAsDate=new Date();
+
+applySavedTheme();
+loadWeeklyGoal();
+loadProfile();
+renderExtraFields();
+renderMealExamples();
+render();
+renderLunaChat();
+
+if(!lunaHistory.length){
+  lunaBot("Вітаю! Я Луна з вкладки “Розумний Спортік”. Натискай кнопки нижче, і я дам готові розумні поради про їжу, план, силу, воду, відпочинок і прогрес.");
+}
+
+function todayKey(){return formatDate(new Date())}
+
+function showView(id,b){
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));
+  if(b)b.classList.add("active");
+  scrollTo({top:0,behavior:"smooth"});
+}
+
+function showViewById(id){
+  let labels={profile:"Профіль",tools:"Інструменти"};
+  showView(id,[...document.querySelectorAll("nav button")].find(b=>b.textContent.includes(labels[id]||"")));
+}
+
+function showSportik(){
+  showView("sportik",[...document.querySelectorAll("nav button")].find(b=>b.textContent.includes("Розумний Спортік")));
+}
+
+function openTrainingForm(){
+  showView("training",document.querySelectorAll("nav button")[2]);
+  setTimeout(()=>formSection.scrollIntoView({behavior:"smooth"}),80);
+}
+
+function saveTrainings(){localStorage.setItem("fitTrainings",JSON.stringify(trainings))}
+function saveMeals(){localStorage.setItem("fitMeals",JSON.stringify(meals))}
+function saveWater(){localStorage.setItem("fitWater",JSON.stringify(waterLog))}
+function saveChallengeLog(){localStorage.setItem("fitChallenges",JSON.stringify(challengeLog))}
+
+function toggleTheme(){
+  document.body.classList.toggle("dark");
+  localStorage.setItem("theme",document.body.classList.contains("dark")?"dark":"light");
+}
+
+function applySavedTheme(){
+  if(localStorage.getItem("theme")==="dark")document.body.classList.add("dark");
+}
+
+function spinQuoteCube(){
+  cubeTurns++;
+  quoteCube.style.transform = rotateX(${xAxis}deg) rotateY(${yAxis}deg)`;
+  quoteBox.textContent=quotes[Math.floor(Math.random()*quotes.length)];
+  quoteBox.classList.add("show");
+{
+
+function loadProfile(){
+  profileName.value=profile.name||"";
+  profileSurname.value=profile.surname||"";
+  profileAge.value=profile.age||"";
+  profileWeight.value=profile.weight||"";
+  profileHeight.value=profile.height||"";
+  profileGoal.value=profile.goal||"Здоров'я";
+  profileActivity.value=profile.activity||"Початковий";
+}
+
+function saveProfile(){
+  profile={name:profileName.value.trim(),surname:profileSurname.value.trim(),age:profileAge.value,weight:Number(profileWeight.value)||0,height:Number(profileHeight.value)||0,goal:profileGoal.value,activity:profileActivity.value};
+  localStorage.setItem("fitProfile",JSON.stringify(profile));
+  renderProfile();
+  renderHomeGreeting();
+  renderSportikSummary();
+  lunaBot(profile.name?`Профіль збережено, ${profile.name}. Тепер мої поради будуть точніші.`:"Профіль збережено.");
+}
+
+function renderHomeGreeting(){
+  homeTitle.textContent=profile.name?`Привіт, ${profile.name}!`:"Мій спортивний кабінет";
+  homeSubtitle.textContent=profile.goal?`Твоя ціль: ${profile.goal}. Fit Progress допоможе стежити за тренуваннями, харчуванням і прогресом.`:"Fit Progress допомагає записувати тренування, бачити прогрес, аналізувати активність і отримувати поради під різні види спорту.";
+}
+
+function renderProfile(){
+  let full=(profile.name||profile.surname)?`${profile.name||""} ${profile.surname||""}`.trim():"Профіль ще не заповнено";
+  profileCard.innerHTML=`<h3>${full}</h3><p>Вік: ${profile.age||"—"} | Вага: ${profile.weight||"—"} кг | Зріст: ${profile.height||"—"} см</p><p>Ціль: ${profile.goal||"—"} | Активність: ${profile.activity||"—"}</p><p>${profileAdvice()}</p>`;
+  let bmi=calculateBMI();
+  bmiValue.textContent=bmi?bmi:"—";
+  bmiText.textContent=bmi?bmiAdvice(bmi):"Заповни вагу і зріст, щоб сайт розрахував ІМТ.";
+}
+
+function calculateBMI(){
+  if(!profile.weight||!profile.height)return null;
+  let h=profile.height/100;
+  return (profile.weight/(h*h)).toFixed(1);
+}
+
+function bmiAdvice(b){
+  b=Number(b);
+  if(b<18.5)return"ІМТ нижче норми. Важливо харчуватися достатньо та не перевантажувати себе.";
+  if(b<25)return"ІМТ у межах норми. Підтримуй баланс тренувань, харчування і відпочинку.";
+  if(b<30)return"ІМТ вище норми. Корисно додати регулярну активність і слідкувати за харчуванням.";
+  return"ІМТ значно вище норми. Для здоровʼя краще поступово збільшувати активність і радитися з фахівцем.";
+}
+
+function profileAdvice(){
+  if(!profile.goal)return"Заповни профіль, і сайт дасть персональну пораду.";
+  if(profile.goal==="Сила")return"Для сили звертай увагу на техніку, білок у раціоні та відпочинок.";
+  if(profile.goal==="Схуднення")return"Для схуднення важливі регулярність, вода, сон і помірне харчування.";
+  if(profile.goal==="Витривалість")return"Для витривалості поступово збільшуй час або дистанцію тренувань.";
+  if(profile.goal==="Гнучкість")return"Для гнучкості краще тренуватися мʼяко, регулярно і без різких рухів.";
+  return"Для здоровʼя найважливіші баланс, рух, сон і відновлення.";
+}
+
+function renderChallenge(){
+  let key=todayKey(),index=new Date().getDate()%challenges.length,done=challengeLog[key];
+  challengeBox.innerHTML=`<h3>${challenges[index]}</h3><p>${done?"Челендж на сьогодні виконано. Гарна робота!":"Виконай завдання дня і відміть його."}</p><button class="btn ${done?"soft":""}" onclick="completeChallenge()">${done?"Виконано":"Позначити виконаним"}</button>`;
+}
+
+function completeChallenge(){
+  challengeLog[todayKey()]=true;
+  saveChallengeLog();
+  renderChallenge();
+  renderBadges();
+  renderStats();
+  renderSportikSummary();
+  lunaBot("Челендж виконано! Маленькі перемоги дуже добре тримають мотивацію.");
+}
+
+function getFieldsForType(t){
+  if(["Біг","Ходьба"].includes(t))return[["distanceKm","Дистанція, км","0.1","5"],["pace","Темп, хв/км","0.1","6.5"]];
+  if(["Велотренування","Лижі"].includes(t))return[["distanceKm","Дистанція, км","0.1","15"],["avgSpeed","Середня швидкість, км/год","0.1","20"]];
+  if(t==="Плавання")return[["distanceMeters","Дистанція, метрів","1","500"],["laps","Кількість доріжок","1","20"]];
+  if(["Силове тренування","Фітнес","Бокс","Єдиноборства"].includes(t))return[["sets","Підходи","1","4"],["reps","Повторення","1","12"],["weight","Вага, кг","0.5","10"]];
+  if(["Йога","Пілатес","Розтяжка"].includes(t))return[["flexibility","Оцінка гнучкості 1-10","1","8"]];
+  if(["Танці","Гімнастика","Повітряна гімнастика"].includes(t))return[["elements","Кількість елементів","1","5"],["attempts","Кількість спроб","1","10"]];
+  if(["Футбол","Баскетбол","Волейбол","Теніс"].includes(t))return[["score","Очки / голи / результат","1","3"],["games","Кількість партій або ігор","1","2"]];
+  if(["Кардіо","HIIT","Ковзани"].includes(t))return[["calories","Калорії, якщо відомо","1","250"]];
+  return[];
+}
+
+function renderExtraFields(m={}){
+  extraFields.innerHTML="<h3>Додаткові дані</h3>";
+  let f=getFieldsForType(typeInput.value);
+  if(!f.length){extraFields.innerHTML+="<p>Для цього виду тренування достатньо основних даних.</p>";return}
+  let g=document.createElement("div");
+  g.className="form-grid";
+  f.forEach(x=>{
+    let l=document.createElement("label");
+    l.textContent=x[1];
+    let i=document.createElement("input");
+    i.type="number";i.min="0";i.step=x[2];i.id=x[0];i.placeholder=x[3];i.value=m[x[0]]||"";
+    l.appendChild(i);g.appendChild(l);
+  });
+  extraFields.appendChild(g);
+}
+
+function readExtraMetrics(){
+  let m={};
+  getFieldsForType(typeInput.value).forEach(x=>{
+    let i=document.getElementById(x[0]);
+    if(i&&i.value!=="")m[x[0]]=Number(i.value);
+  });
+  return m;
+}
+
+function formatMetrics(m){
+  if(!m)return"";
+  let p=[];
+  if(m.distanceKm)p.push("Дистанція: "+m.distanceKm+" км");
+  if(m.pace)p.push("Темп: "+m.pace+" хв/км");
+  if(m.avgSpeed)p.push("Швидкість: "+m.avgSpeed+" км/год");
+  if(m.distanceMeters)p.push("Дистанція: "+m.distanceMeters+" м");
+  if(m.laps)p.push("Доріжки: "+m.laps);
+  if(m.sets)p.push("Підходи: "+m.sets);
+  if(m.reps)p.push("Повторення: "+m.reps);
+  if(m.weight)p.push("Вага: "+m.weight+" кг");
+  if(m.flexibility)p.push("Гнучкість: "+m.flexibility+"/10");
+  if(m.elements)p.push("Елементи: "+m.elements);
+  if(m.attempts)p.push("Спроби: "+m.attempts);
+  if(m.score)p.push("Результат: "+m.score);
+  if(m.games)p.push("Ігри/партії: "+m.games);
+  if(m.calories)p.push("Калорії: "+m.calories);
+  return p.join(" | ");
+}
+
+function readTrainingForm(){
+  let date=dateInput.value,type=typeInput.value,minutes=Number(minutesInput.value),price=Number(priceInput.value)||0,difficulty=difficultyInput.value,mood=moodInput.value,note=noteInput.value.trim(),metrics=readExtraMetrics();
+  if(!date||minutes<=0){alert("Заповни дату і тривалість тренування.");return null}
+  return{date,type,minutes,price,difficulty,mood,note,metrics};
+}
+
+function saveTrainingFromForm(){
+  let tr=readTrainingForm();
+  if(!tr)return;
+  if(editingId){trainings=trainings.map(x=>x.id===editingId?{...tr,id:editingId}:x);cancelEdit()}
+  else trainings.push({...tr,id:Date.now()});
+  saveTrainings();
+  clearTrainingForm();
+  render();
+  lunaBot(reactionToTraining(tr));
+}
+
+function clearTrainingForm(){
+  minutesInput.value="";
+  priceInput.value="";
+  noteInput.value="";
+  dateInput.valueAsDate=new Date();
+  renderExtraFields();
+}
+
+function editTraining(id){
+  let x=trainings.find(t=>t.id===id);
+  if(!x)return;
+  editingId=id;
+  formTitle.textContent="Редагувати тренування";
+  saveButton.textContent="Зберегти зміни";
+  cancelButton.style.display="block";
+  dateInput.value=x.date;
+  typeInput.value=x.type;
+  minutesInput.value=x.minutes;
+  priceInput.value=x.price||0;
+  difficultyInput.value=x.difficulty||"Середнє";
+  moodInput.value=x.mood;
+  noteInput.value=x.note||"";
+  renderExtraFields(x.metrics||{});
+  openTrainingForm();
+}
+
+function cancelEdit(){
+  editingId=null;
+  formTitle.textContent="Додати тренування";
+  saveButton.textContent="Зберегти тренування";
+  cancelButton.style.display="none";
+  clearTrainingForm();
+}
+
+function deleteTraining(id){
+  trainings=trainings.filter(x=>x.id!==id);
+  saveTrainings();
+  render();
+  lunaBot("Запис видалено. Але досвід тренування все одно залишається з тобою.");
+}
+
+function clearAll(){
+  if(confirm("Точно очистити всі тренування, профіль, харчування, воду і челенджі?")){
+    trainings=[];meals=[];waterLog={};profile={};challengeLog={};lunaHistory=[];
+    saveTrainings();saveMeals();saveWater();localStorage.removeItem("fitProfile");saveChallengeLog();localStorage.removeItem("fitLunaChat");
+    loadProfile();render();renderLunaChat();
+  }
+}
+
+function renderMealExamples(){
+  mealExamples.innerHTML="";
+  mealIdeas[mealTypeInput.value].forEach(x=>{
+    let b=document.createElement("button");
+    b.className="chip";
+    b.textContent=x;
+    b.onclick=()=>{mealTextInput.value=x};
+    mealExamples.appendChild(b);
+  });
+}
+
+function addMeal(){
+  let date=mealDateInput.value,type=mealTypeInput.value,text=mealTextInput.value.trim();
+  if(!date||!text){alert("Заповни дату і напиши, що ти їла.");return}
+  meals.push({id:Date.now(),date,type,text});
+  saveMeals();
+  mealTextInput.value="";
+  renderMeals();
+  renderBadges();
+  renderSportikSummary();
+  lunaBot("Запис харчування збережено. Раціон теж частина спортивного прогресу.");
+}
+
+function deleteMeal(id){
+  meals=meals.filter(x=>x.id!==id);
+  saveMeals();
+  renderMeals();
+  renderBadges();
+  renderSportikSummary();
+}
+
+function renderMeals(){
+  mealList.innerHTML="";
+  if(!meals.length){mealList.innerHTML="<p>Поки що немає записів харчування.</p>";return}
+  meals.slice().sort((a,b)=>b.date.localeCompare(a.date)).forEach(x=>{
+    let card=document.createElement("div");
+    card.className="food";
+    card.innerHTML=`<h3>${x.date} — ${x.type}</h3><p>${x.text}</p>`;
+    let btn=document.createElement("button");
+    btn.className="btn danger";
+    btn.textContent="Видалити";
+    btn.onclick=()=>deleteMeal(x.id);
+    card.appendChild(btn);
+    mealList.appendChild(card);
+  });
+}
+
+function renderWater(){
+  let key=waterDateInput.value;
+  waterCount.textContent=waterLog[key]||0;
+  renderStats();
+  renderBadges();
+  renderSportikSummary();
+}
+
+function changeWater(delta){
+  let key=waterDateInput.value;
+  if(!key)return;
+  waterLog[key]=Math.max(0,(waterLog[key]||0)+delta);
+  saveWater();
+  renderWater();
+  if(delta>0)lunaBot("Вода додана. Відновлення починається з простих звичок.");
+}
+
+function renderStats(){
+  let min=trainings.reduce((s,x)=>s+x.minutes,0),price=trainings.reduce((s,x)=>s+(x.price||0),0),ach=getAchievements().filter(x=>x.opened).length;
+  trainingCount.textContent=trainings.length;
+  minuteCount.textContent=min;
+  priceCount.textContent=price;
+  achievementCount.textContent=ach;
+}
+
+function renderRecords(){
+  records.innerHTML="";
+  let visible=filterType.value==="all"?trainings:trainings.filter(x=>x.type===filterType.value);
+  if(!visible.length){records.innerHTML="<p>Записів за цим фільтром немає.</p>";return}
+  visible.slice().sort((a,b)=>b.date.localeCompare(a.date)).forEach(x=>{
+    let r=document.createElement("div");
+    r.className="record";
+    r.innerHTML=`<h3>${x.date} - ${x.type}</h3><p>${x.minutes} хв | ${x.difficulty||"Середнє"} | Настрій: ${x.mood} | Ціна: ${x.price||0} грн</p>${formatMetrics(x.metrics)?`<p>${formatMetrics(x.metrics)}</p>`:""}${x.note?`<p>${x.note}</p>`:""}`;
+    let a=document.createElement("div");
+    a.className="record-actions";
+    let e=document.createElement("button");
+    e.className="btn soft";
+    e.textContent="Редагувати";
+    e.onclick=()=>editTraining(x.id);
+    let d=document.createElement("button");
+    d.className="btn danger";
+    d.textContent="Видалити";
+    d.onclick=()=>deleteTraining(x.id);
+    a.append(e,d);
+    r.appendChild(a);
+    records.appendChild(r);
+  });
+}
+
+function renderLevel(){
+  let m=trainings.reduce((s,x)=>s+x.minutes,0),l="Start",t="Початковий рівень. Додай кілька тренувань, щоб підняти рівень.";
+  if(trainings.length>=5||m>=150){l="Active";t="Ти вже тренуєшся регулярно. Продовжуй підтримувати темп."}
+  if(trainings.length>=10||m>=400){l="Strong";t="Сильний рівень. Видно стабільність і серйозний підхід."}
+  if(trainings.length>=20||m>=900){l="Pro";t="Профі-рівень. Ти маєш дуже сильну дисципліну."}
+  levelBox.textContent=`Рівень: ${l}. ${t}`;
+}
+
+function renderSmartAdvice(){
+  if(!trainings.length){smartAdvice.textContent=profileAdvice();return}
+  let x=trainings.slice().sort((a,b)=>b.date.localeCompare(a.date))[0],a="Останнє тренування: "+x.type+". ";
+  if(x.type==="Біг"&&x.metrics?.distanceKm)a+="Ти пробігла "+x.metrics.distanceKm+" км. Поступово збільшуй дистанцію і не забувай про відновлення.";
+  else if(x.type==="Силове тренування")a+="Для силового прогресу важливі техніка, білок у раціоні та день відпочинку.";
+  else if(x.difficulty==="Важке")a+="Після важкого навантаження варто запланувати відновлення, воду і нормальний сон.";
+  else a+=profileAdvice();
+  smartAdvice.textContent=a;
+}
+
+function renderCalendar(){
+  let now=new Date(),y=calendarDate.getFullYear(),m=calendarDate.getMonth(),mn=["Січень","Лютий","Березень","Квітень","Травень","Червень","Липень","Серпень","Вересень","Жовтень","Листопад","Грудень"],dn=["Пн","Вт","Ср","Чт","Пт","Сб","Нд"];
+  monthTitle.textContent=mn[m]+" "+y;
+  calendar.innerHTML="";
+  dn.forEach(d=>calendar.innerHTML+=`<div class="day-name">${d}</div>`);
+  let first=new Date(y,m,1),last=new Date(y,m+1,0),off=(first.getDay()+6)%7;
+  for(let i=0;i<off;i++)calendar.appendChild(document.createElement("div"));
+  for(let d=1;d<=last.getDate();d++){
+    let key=`${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`,el=document.createElement("div");
+    el.className="day";
+    if(trainings.some(x=>x.date===key))el.classList.add("active");
+    if(d===now.getDate()&&m===now.getMonth()&&y===now.getFullYear())el.classList.add("today");
+    el.textContent=d;
+    calendar.appendChild(el);
+  }
+}
+
+function previousMonth(){calendarDate.setMonth(calendarDate.getMonth()-1);renderCalendar()}
+function nextMonth(){calendarDate.setMonth(calendarDate.getMonth()+1);renderCalendar()}
+function goToCurrentMonth(){calendarDate=new Date();renderCalendar()}
+
+function loadWeeklyGoal(){weeklyGoalInput.value=Number(localStorage.getItem("weeklyGoal"))||3}
+
+function saveWeeklyGoal(){
+  localStorage.setItem("weeklyGoal",String(Number(weeklyGoalInput.value)||1));
+  renderWeeklyGoal();
+  renderBadges();
+  renderSportikSummary();
+}
+
+function isThisWeek(d){
+  let date=new Date(d+"T00:00:00"),now=new Date(),start=new Date(now);
+  start.setDate(now.getDate()-((now.getDay()+6)%7));
+  start.setHours(0,0,0,0);
+  let end=new Date(start);
+  end.setDate(start.getDate()+7);
+  return date>=start&&date<end;
+}
+
+function renderWeeklyGoal(){
+  let goal=Number(weeklyGoalInput.value)||1,done=trainings.filter(x=>isThisWeek(x.date)).length;
+  weeklyGoalText.textContent=`Цього тижня виконано: ${done} з ${goal} тренувань.`;
+  weeklyProgressFill.style.width=Math.min(100,Math.round(done/goal*100))+"%";
+}
+
+function formatDate(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+
+function renderProgressChart(){
+  progressChart.innerHTML="";
+  let days=[],now=new Date();
+  for(let i=6;i>=0;i--){
+    let d=new Date(now);
+    d.setDate(now.getDate()-i);
+    let key=formatDate(d),minutes=trainings.filter(x=>x.date===key).reduce((s,x)=>s+x.minutes,0);
+    days.push({label:key.slice(5),minutes});
+  }
+  let max=Math.max(...days.map(x=>x.minutes),30);
+  days.forEach(x=>{
+    progressChart.innerHTML+=`<div class="bar-wrap"><div>${x.minutes} хв</div><div class="bar" style="height:${Math.max(8,Math.round(x.minutes/max*120))}px"></div><div>${x.label}</div></div>`;
+  });
+}
+
+function readTimerInputs(){
+  let m=Number(timerMinutesInput.value)||0,s=Number(timerSecondsInput.value)||0;
+  if(m===0&&s===0){alert("Введи хоча б кілька секунд або хвилин.");return false}
+  if(s<0||s>59){alert("У полі секунд можна вводити число від 0 до 59.");return false}
+  startTimerSeconds=m*60+s;
+  timerSeconds=startTimerSeconds;
+  renderTimer();
+  return true;
+}
+
+function startTimer(){
+  if(timerInterval)return;
+  if(!timerStarted){if(!readTimerInputs())return;timerStarted=true}
+  timerInterval=setInterval(()=>{
+    timerSeconds--;
+    if(timerSeconds<=0){
+      timerSeconds=0;
+      timerStarted=false;
+      pauseTimer();
+      playTimerMelody();
+      alert("Час завершено!");
+    }
+    renderTimer();
+  },1000);
+}
+
+function pauseTimer(){clearInterval(timerInterval);timerInterval=null}
+function resetTimer(){pauseTimer();timerStarted=false;readTimerInputs()}
+function renderTimer(){timerDisplay.textContent=String(Math.floor(timerSeconds/60)).padStart(2,"0")+":"+String(timerSeconds%60).padStart(2,"0")}
+
+function playTimerMelody(){
+  let C=window.AudioContext||window.webkitAudioContext;
+  if(!C)return;
+  let a=new C();
+  let end=a.currentTime+5;
+  let notes=[784,988,1175,1568];
+  let i=0;
+  function beep(){
+    if(a.currentTime>=end)return;
+    let o=a.createOscillator(),g=a.createGain();
+    o.type="square";
+    o.frequency.value=notes[i%notes.length];
+    o.connect(g);
+    g.connect(a.destination);
+    let st=a.currentTime,en=st+.22;
+    g.gain.setValueAtTime(.001,st);
+    g.gain.exponentialRampToValueAtTime(.55,st+.03);
+    g.gain.exponentialRampToValueAtTime(.001,en);
+    o.start(st);
+    o.stop(en);
+    i++;
+    setTimeout(beep,280);
+  }
+  beep();
+}
+
+function renderPlaylist(){
+  playlist.innerHTML="";
+  songs.forEach((s,i)=>{
+    playlist.innerHTML+=`<div class="song"><h3>${s.name}</h3><p>${i===selectedSong?"Обраний трек. Натисни “Відкрити”, щоб запустити музику.":s.desc}</p><div class="actions"><button class="${i===selectedSong?"btn":"btn soft"}" onclick="selectSong(${i})">${i===selectedSong?"Обрано":"Обрати"}</button><button class="btn" onclick="openSong(${i})">Відкрити</button></div></div>`;
+  });
+}
+
+function selectSong(i){
+  selectedSong=i;
+  localStorage.setItem("selectedSong",String(i));
+  renderPlaylist();
+}
+
+function openSong(i){
+  selectedSong=i;
+  localStorage.setItem("selectedSong",String(i));
+  renderPlaylist();
+  window.open(songs[i].url,"_blank");
+}
+
+function renderNutrition(){
+  let plans={
+    energy:[["Сніданок","Вівсянка з фруктами, яйце або йогурт."],["Перед тренуванням","Банан, тост або легкий перекус за 60-90 хв."],["Після тренування","Крупа, овочі, білок і вода."]],
+    strength:[["Сніданок","Яйця, каша, сир або грецький йогурт."],["Обід","Курка, риба або бобові + крупа + овочі."],["Після тренування","Білкова страва і складні вуглеводи."]],
+    weight:[["Основний принцип","Більше овочів, достатньо білка, менше солодких напоїв."],["Перед тренуванням","Легкий перекус, якщо є голод."],["Вечеря","Овочі + білок, без переїдання."]],
+    recovery:[["Після навантаження","Вода, білок, крупи або картопля, овочі."],["Сон","7-9 годин сну дуже впливають на результат."],["Відновлення","Не забувай про розтяжку і легкі дні."]]
+  };
+  nutritionBox.innerHTML="";
+  plans[nutritionGoal.value].forEach(x=>nutritionBox.innerHTML+=`<div class="food"><h3>${x[0]}</h3><p>${x[1]}</p></div>`);
+  healthTips.innerHTML='<div class="food"><h3>Баланс</h3><p>Поєднуй тренування, сон, воду та відпочинок.</p></div><div class="food"><h3>Безпека</h3><p>Якщо зʼявляється біль або сильна втома, краще зменшити навантаження.</p></div>';
+}
+
+function getAchievements(){
+  let min=trainings.reduce((s,x)=>s+x.minutes,0),price=trainings.reduce((s,x)=>s+(x.price||0),0),km=trainings.reduce((s,x)=>s+(x.metrics?.distanceKm||0),0),goal=Number(weeklyGoalInput.value)||3,done=trainings.filter(x=>isThisWeek(x.date)).length,challengesDone=Object.values(challengeLog).filter(Boolean).length;
+  return[
+    {title:"Перший крок",text:"Додано перше тренування",opened:trainings.length>=1},
+    {title:"Регулярність",text:"Додано 5 тренувань",opened:trainings.length>=5},
+    {title:"100 хвилин",text:"Набрано 100 хвилин активності",opened:min>=100},
+    {title:"Сила звички",text:"Додано 10 тренувань",opened:trainings.length>=10},
+    {title:"Інвестиція в себе",text:"Витрачено 1000 грн на тренування",opened:price>=1000},
+    {title:"Дистанція",text:"Подолано 10 км у тренуваннях",opened:km>=10},
+    {title:"Тижнева мета",text:"Виконано мету на тиждень",opened:done>=goal},
+    {title:"7 челенджів",text:"Виконано 7 щоденних челенджів",opened:challengesDone>=7},
+    {title:"Раціон",text:"Додано перший запис харчування",opened:meals.length>=1},
+    {title:"Вода",text:"Випито 6 склянок води за день",opened:(waterLog[todayKey()]||0)>=6},
+    {title:"Профіль",text:"Заповнено профіль користувача",opened:!!profile.name}
+  ];
+}
+
+function renderBadges(){
+  badges.innerHTML="";
+  getAchievements().forEach(x=>badges.innerHTML+=`<div class="badge" style="${x.opened?"border-color:#f97316":""}"><h3>${x.opened?"✓":"?"} ${x.title}</h3><p>${x.text}</p></div>`);
+}
+
+function exportReport(){
+  let total=trainings.reduce((s,x)=>s+x.minutes,0);
+  let price=trainings.reduce((s,x)=>s+(x.price||0),0);
+  let rows=trainings.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(x=>`<tr><td>${x.date}</td><td>${x.type}</td><td>${x.minutes}</td><td>${x.difficulty||""}</td><td>${x.mood||""}</td><td>${x.price||0}</td><td>${formatMetrics(x.metrics)}</td><td>${x.note||""}</td></tr>`).join("");
+  let mealRows=meals.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(x=>`<tr><td>${x.date}</td><td>${x.type}</td><td>${x.text}</td></tr>`).join("");
+  let html=`<!DOCTYPE html><html lang="uk"><head><meta charset="UTF-8"><title>Fit Progress Report</title><style>body{font-family:Arial,sans-serif;margin:30px;color:#251238;background:#fff8f0}h1{color:#6d28d9}table{width:100%;border-collapse:collapse;background:white;margin:14px 0 28px}th,td{border:1px solid #ead7ff;padding:10px;text-align:left;vertical-align:top}th{background:#f3e9ff}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.card{background:white;border:1px solid #ead7ff;border-radius:14px;padding:14px}.card strong{display:block;font-size:28px;color:#f97316}@media(max-width:800px){.cards{grid-template-columns:1fr}table{font-size:12px}}</style></head><body><h1>Fit Progress — звіт</h1><p>Красивий експорт спортивного прогресу.</p><div class="cards"><div class="card"><strong>${trainings.length}</strong>тренувань</div><div class="card"><strong>${total}</strong>хвилин</div><div class="card"><strong>${price}</strong>грн</div><div class="card"><strong>${getAchievements().filter(x=>x.opened).length}</strong>досягнень</div></div><h2>Тренування</h2><table><thead><tr><th>Дата</th><th>Тип</th><th>Хв</th><th>Складність</th><th>Настрій</th><th>Ціна</th><th>Дані</th><th>Нотатка</th></tr></thead><tbody>${rows||"<tr><td colspan='8'>Немає тренувань</td></tr>"}</tbody></table><h2>Харчування</h2><table><thead><tr><th>Дата</th><th>Прийом</th><th>Запис</th></tr></thead><tbody>${mealRows||"<tr><td colspan='3'>Немає записів</td></tr>"}</tbody></table></body></html>`;
+  let blob=new Blob([html],{type:"text/html;charset=utf-8"});
+  let url=URL.createObjectURL(blob);
+  let a=document.createElement("a");
+  a.href=url;
+  a.download="fit-progress-report.html";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function lunaSave(){localStorage.setItem("fitLunaChat",JSON.stringify(lunaHistory.slice(-40)))}
+
+function lunaBot(text){
+  lunaHistory.push({role:"bot",text});
+  lunaSave();
+  renderLunaChat();
+}
+
+function lunaUser(text){
+  lunaHistory.push({role:"user",text});
+  lunaSave();
+  renderLunaChat();
+}
+
+function renderLunaChat(){
+  lunaChat.innerHTML="";
+  lunaHistory.forEach(m=>{
+    let d=document.createElement("div");
+    d.className="luna-msg "+(m.role==="user"?"luna-user":"luna-bot");
+    d.textContent=m.text;
+    lunaChat.appendChild(d);
+  });
+  lunaChat.scrollTop=lunaChat.scrollHeight;
+}
+
+function quickLuna(text){
+  let labels={"аналіз":"Проаналізуй мій прогрес","план":"Склади план на сьогодні","їжа":"Що мені їсти сьогодні?","сила":"Що їсти, щоб бути сильною?","мотивація":"Підтримай мене","трюк":"Як вивчити трюк?","вода":"Скільки пити води?","відпочинок":"Що робити, якщо я втомилась?"};
+  lunaUser(labels[text]||text);
+  setTimeout(()=>lunaBot(lunaAnswer(text)),250);
+}
+
+function updateLunaAvatar(){
+  let f={butterfly:{happy:"🦋",focus:"🦋",soft:"🌙",magic:"✨🦋"},cat:{happy:"😺",focus:"😼",soft:"😿",magic:"🐱✨"},fairy:{happy:"🧚",focus:"🧚‍♀️",soft:"🌙",magic:"🧚✨"}};
+  let face=f[lunaType.value][lunaMood.value];
+  lunaAvatar.textContent=face;
+  sportikBigAvatar.textContent=face;
+  homeLunaAvatar.textContent=face;
+}
+
+function lunaMoodPhrase(){
+  return{happy:"Я радію разом з тобою!",focus:"Зосередимось на одному маленькому кроці.",soft:"Сьогодні можна м'яко і без тиску.",magic:"Додамо трохи магії до твого прогресу."}[lunaMood.value];
+}
+
+function reactionToTraining(t){
+  if(t.mood==="Супер")return`Вау! ${t.type} виконано. Я дуже радію твоєму прогресу.`;
+  if(t.mood==="Було важко")return"Ти впоралась навіть коли було складно. Це сильний крок, але не забудь про відпочинок.";
+  if(t.mood==="Потрібен відпочинок")return"Слухай тіло. Легкий день або розтяжка теж можуть бути перемогою.";
+  return`Гарна робота: ${t.minutes} хвилин уже записано в прогрес.`;
+}
+
+function foodAdvice(){return lunaAnswer("їжа")}
+
+function renderSportikSummary(){
+  let total=trainings.reduce((s,t)=>s+t.minutes,0),week=trainings.filter(t=>isThisWeek(t.date)).length,w=waterLog[todayKey()]||0;
+  sportikSummary.innerHTML=`<h3>Швидкий аналіз</h3><p>Тренувань: ${trainings.length} | Хвилин: ${total} | Цього тижня: ${week} | Записів їжі: ${meals.length} | Води сьогодні: ${w}</p>`;
+}
+
+function lunaAnswer(q){
+  q=q.toLowerCase();
+  let total=trainings.reduce((s,t)=>s+t.minutes,0);
+  let last=trainings.slice().sort((a,b)=>b.date.localeCompare(a.date))[0];
+  let g=profile.goal||"здоров'я";
+  let w=waterLog[todayKey()]||0;
+  let week=trainings.filter(t=>isThisWeek(t.date)).length;
+  let mealsToday=meals.filter(m=>m.date===todayKey()).map(m=>m.text).join(", ");
+
+  if(q.includes("їжа")||q.includes("харч")||q.includes("раціон")){
+    if(g==="Сила")return"Для сили обирай їжу з білком і енергією: яйця, сир, йогурт, курка, риба, бобові, гречка, рис, картопля, овочі. Перед тренуванням можна банан або тост, після — білок + гарнір + вода.";
+    if(g==="Гнучкість")return"Для гнучкості важливо не тренуватися голодною і пити воду. Добре підійдуть: йогурт з фруктами, вівсянка, яйця, суп, риба або курка з овочами.";
+    if(g==="Схуднення")return"Для легкого схуднення краще не голодувати, а тримати баланс: більше овочів, достатньо білка, вода, менше солодких напоїв.";
+    if(g==="Витривалість")return"Для витривалості потрібна енергія: каша, рис, гречка, картопля, фрукти, вода і білок. Перед активністю добре підійде банан або тост.";
+    return`Для здоров'я обирай простий баланс: білок + гарнір + овочі + вода. Наприклад: яйця з тостом, курка з гречкою, риба з овочами, йогурт з фруктами. Сьогодні у тебе ${w} склянок води.`;
+  }
+
+  if(q.includes("сила")||q.includes("сильно")||q.includes("сильною")||q.includes("м'яз")||q.includes("мяз")){
+    return"Щоб ставати сильнішою, важливо їсти достатньо білка і не пропускати нормальні прийоми їжі. Гарні варіанти: яйця, сир, йогурт, курка, риба, бобові, гречка, рис, картопля й овочі. Після тренування добре з'їсти щось типу курка + гречка + салат або йогурт + банан. Сила росте не тільки від тренування, а й від сну та відпочинку.";
+  }
+
+  if(q.includes("вода")||q.includes("пити")){
+    if(w<4)return`Сьогодні у тебе ${w} склянок води. Спробуй додати ще 1-2 склянки протягом дня, особливо якщо було тренування.`;
+    if(w<6)return`У тебе вже ${w} склянок води — гарно! Можна поступово дійти до 6 склянок, але без примусу.`;
+    return`У тебе ${w} склянок води сьогодні. Чудово, тільки слухай тіло і не пий через силу.`;
+  }
+
+  if(q.includes("план")||q.includes("тренув")){
+    if(g==="Гнучкість")return"План на сьогодні: 5 хв розігрів, 10-15 хв м'яка розтяжка, 5 хв повторення одного елемента, 3 хв спокійного завершення. Без різких рухів.";
+    if(g==="Сила")return"План на сьогодні: 5 хв розминка, 3 кола вправ: присідання, планка, віджимання від опори, прес. Відпочивай між підходами і слідкуй за технікою.";
+    if(g==="Витривалість")return"План на сьогодні: 5 хв розминка, 15-20 хв ходьби, бігу або кардіо в комфортному темпі, потім 5 хв розтяжки.";
+    return"План на сьогодні: 5 хв розминка, 15 хв основної активності, 5 хв розтяжка, вода після. Головне — зробити маленький, але реальний крок.";
+  }
+
+  if(q.includes("трюк")||q.includes("елемент")||q.includes("павук")||q.includes("шпагат")||q.includes("місток")){
+    return"Трюк краще вчити частинами: спочатку розігрів, потім підготовчі вправи, потім 3-5 спокійних спроб. Не роби через біль. Для павука, містка чи шпагату важливі регулярність, м'якість і контроль.";
+  }
+
+  if(q.includes("відпоч")||q.includes("втом")||q.includes("важко")||q.includes("болить")||q.includes("біль")){
+    return"Якщо ти втомилась або щось болить, не треба тренуватися через силу. Обери відновлення: вода, сон, легка прогулянка або м'яка розтяжка. Якщо біль сильний або не минає, краще сказати дорослому чи тренеру.";
+  }
+
+  if(q.includes("мотивац")||q.includes("підтрим")||q.includes("не хочу")||q.includes("лінь")){
+    return"Тобі не треба робити ідеально. Зроби найменший крок: 5 хвилин розминки, один запис у щоденник або склянку води. Часто мотивація приходить уже після початку.";
+  }
+
+  if(q.includes("аналіз")||q.includes("прогрес")){
+    if(!trainings.length)return"Поки тренувань немає, тому я ще не можу зробити аналіз. Додай перше тренування — навіть 10 хвилин уже рахуються.";
+    return`Я бачу ${trainings.length} тренувань, ${total} хвилин активності, цього тижня ${week} тренувань. Останнє тренування: ${last.type}, настрій: ${last.mood}. Записів їжі сьогодні: ${mealsToday||"поки немає"}. Наступний крок — тримати регулярність без перевантаження.`;
+  }
+
+  return`Я поруч. Для цілі "${g}" найважливіші регулярність, вода, нормальна їжа, сон і тренування без болю.`;
+}
+
+function render(){
+  renderHomeGreeting();
+  renderProfile();
+  renderChallenge();
+  renderStats();
+  renderLevel();
+  renderSmartAdvice();
+  renderRecords();
+  renderCalendar();
+  renderWeeklyGoal();
+  renderProgressChart();
+  renderPlaylist();
+  renderNutrition();
+  renderMealExamples();
+  renderMeals();
+  renderWater();
+  renderBadges();
+  renderTimer();
+  updateLunaAvatar();
+  renderSportikSummary();
+}
+}
+</script>
+</body>
+</html>
